@@ -12,6 +12,11 @@ export interface Puzzle {
 
 export type Mutator = (puzzle: Puzzle) => Puzzle;
 
+export interface Operation {
+  description: string;
+  mutate: Mutator;
+}
+
 export interface Solver {
   name: string;
   solve: Mutator;

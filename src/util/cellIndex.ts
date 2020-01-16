@@ -1,3 +1,6 @@
-export default function cellIndex(x: number, y: number): number {
-  return y * 9 + x;
+import { isObject } from 'lodash';
+import { Cell } from '../types';
+
+export default function cellIndex(cell: Cell | number): number {
+  return isObject(cell) ? cell.index : cell;
 }

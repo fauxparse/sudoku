@@ -1,5 +1,6 @@
 import { isArray, uniq } from 'lodash';
 import { Cell } from '../types';
+import cellIndex from './cellIndex';
 import rowIndex from './rowIndex';
 import columnIndex from './columnIndex';
 
@@ -7,10 +8,11 @@ function allSame<T>(items: T[]): boolean {
   return uniq(items).length === 1;
 }
 
-export default function notate(cell: Cell | Cell[]): string {
+export default function notate(cell: Cell | number | (Cell | number)[]): string {
   if (isArray(cell)) {
-    const rows = cell.map(c => rowIndex(c.index) + 1);
-    const columns = cell.map(c => columnIndex(c.index) + 1);
+    const rows = cell.map((c: Cell | number) => rowIndex(cellIndex(c)) + 1);
+    const columns = cell.map((c: Cell | number) => columnIndex(cellIndex(c)) + 1);
+
     if (allSame(rows)) {
       return `r${rows[0]}c${columns.join('')}`;
     } else if (allSame(columns)) {
@@ -19,8 +21,8 @@ export default function notate(cell: Cell | Cell[]): string {
       return cell.map(notate).join('/');
     }
   } else {
-    const row = rowIndex(cell.index);
-    const column = columnIndex(cell.index);
+    const row = rowIndex(cellIndex(cell));
+    const column = columnIndex(cellIndex(cell));
     return `r${row + 1}c${column + 1}`;
   }
 }

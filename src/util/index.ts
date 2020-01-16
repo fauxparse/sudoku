@@ -18,4 +18,5 @@ export { default as remove } from './remove';
 export { default as row } from './row';
 export { default as rowIndex } from './rowIndex';
 export { default as rowIndexToCellIndex } from './rowIndexToCellIndex';
+export { default as sees } from './sees';
 export { default as setName } from './setName';

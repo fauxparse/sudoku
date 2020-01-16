@@ -1,10 +1,8 @@
-import { Puzzle, Cell } from '../types';
-import columnIndex from './columnIndex';
-import rowIndex from './rowIndex';
-import place from './place';
+import { Puzzle, Cell, Operation } from '../types';
+import place from '../operations/place';
 
 const EMPTY = Array(81)
-  .fill(' ')
+  .fill('.')
   .join('');
 
 function emptyCell(): Cell {
@@ -26,15 +24,16 @@ function emptyPuzzle(): Puzzle {
 export default function newPuzzle(givens = EMPTY): Puzzle {
   const chars = givens.split('').slice(0, EMPTY.length);
   while (chars.length < EMPTY.length) {
-    chars.push(' ');
+    chars.push('.');
   }
   return chars
     .map((char, index) => ({ char, index }))
-    .reduce((puzzle, { char, index }) => {
-      if (/^[1-9]$/.test(char)) {
-        return place(columnIndex(index), rowIndex(index), parseInt(char, 10), puzzle, 'given');
-      } else {
-        return puzzle;
-      }
+    .filter(({ char }) => /^[1-9]$/.test(char))
+    .reduce(
+      (ops: Operation[], { char, index }) => [...ops, place(parseInt(char, 10), index, 'given')],
+      [],
+    )
+    .reduce((puzzle, op) => {
+      return op.mutate(puzzle);
     }, emptyPuzzle());
 }
