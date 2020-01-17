@@ -10,6 +10,7 @@ export { default as diff } from './diff';
 export { default as eliminate } from './eliminate';
 export { default as indexInBlock } from './indexInBlock';
 export { default as isSolved } from './isSolved';
+export { default as locate } from './locate';
 export { default as missing } from './missing';
 export { default as newPuzzle } from './newPuzzle';
 export { default as notate } from './notate';

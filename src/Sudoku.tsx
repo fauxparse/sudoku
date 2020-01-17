@@ -3,20 +3,14 @@ import { BehaviorSubject, Observable, from, of } from 'rxjs';
 import { mergeScan, mergeMap, first, map, catchError } from 'rxjs/operators';
 import './App.scss';
 import Grid from './Grid';
-import { Puzzle, Operation } from './types';
-import { newPuzzle, isSolved } from './util';
-import place from './operations/place';
+import { Puzzle, Diff, Step, State } from './types';
+import { newPuzzle, diff } from './util';
+import strategies from './strategies';
 
-interface Step {
-  operations: Operation[];
-}
+const EMPTY_STEP = { operations: [] };
 
-const findNakedSingles = (puzzle: Puzzle): Observable<Step> =>
-  from(
-    puzzle.cells
-      .filter(cell => !isSolved(cell) && cell.numbers.length === 1)
-      .map(cell => ({ operations: [place(cell.numbers[0], cell)] })),
-  );
+const apply = (step: Step, puzzle: Puzzle): Puzzle =>
+  step.operations.reduce((puzzle, op) => op.mutate(puzzle), puzzle);
 
 const useStepper = (): [BehaviorSubject<number>, () => void] => {
   const stepper = useRef(new BehaviorSubject<number>(0));
@@ -35,20 +29,23 @@ interface Props {
 const Sudoku: React.FC<Props> = ({ givens }) => {
   const [step$, nextStep] = useStepper();
 
-  const stream$ = useMemo(
+  const stream$ = useMemo<Observable<State>>(
     () =>
       step$.pipe(
         mergeScan(
-          puzzle =>
-            from([findNakedSingles]).pipe(
-              mergeMap(op => op(puzzle).pipe(first())),
+          ({ puzzle, next }: State): Observable<State> => {
+            const nextPuzzle = apply(next, puzzle);
+            return from(strategies).pipe(
+              mergeMap(op => op(nextPuzzle)),
               first(),
-              catchError(() => of<Step>({ operations: [] })),
-              map(step =>
-                step.operations.reduce((p: Puzzle, op: Operation) => op.mutate(p), puzzle),
-              ),
-            ),
-          newPuzzle(givens),
+              catchError(() => of(EMPTY_STEP)),
+              map(step => ({
+                puzzle: nextPuzzle,
+                next: step,
+              })),
+            );
+          },
+          { puzzle: newPuzzle(givens), next: EMPTY_STEP },
         ),
       ),
     [givens, step$],
@@ -56,13 +53,18 @@ const Sudoku: React.FC<Props> = ({ givens }) => {
 
   const [puzzle, setPuzzle] = useState<Puzzle | null>(null);
 
+  const [difference, setDifference] = useState<Diff>([]);
+
   useEffect(() => {
-    stream$.subscribe(setPuzzle);
+    stream$.subscribe(({ puzzle, next }) => {
+      setPuzzle(puzzle);
+      setDifference(diff(puzzle, apply(next, puzzle)));
+    });
   }, [stream$]);
 
   return (
     <div className="sudoku">
-      {puzzle && <Grid puzzle={puzzle} diff={[]} />}
+      {puzzle && <Grid puzzle={puzzle} diff={difference} />}
 
       <button onClick={nextStep}>Step</button>
     </div>

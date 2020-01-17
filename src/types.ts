@@ -30,3 +30,12 @@ export interface CellDiff {
 }
 
 export type Diff = CellDiff[];
+
+export interface Step {
+  operations: Operation[];
+}
+
+export interface State {
+  puzzle: Puzzle;
+  next: Step;
+}

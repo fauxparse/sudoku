@@ -14,8 +14,8 @@
   box-sizing: content-box;
   width: calc(27em + 8px);
   height: calc(27em + 8px);
-  border: 1px solid #333;
   font-family: monospace;
+  font-size: 1rem;
 
   .cell {
     display: flex;
@@ -24,9 +24,9 @@
     box-sizing: content-box;
     width: 3em;
     height: 3em;
+    margin: -1px 0 0 -1px;
     background: white;
     border: 1px solid #ccc;
-    border-width: 1px 0 0 1px;
 
     &:nth-child(1),
     &:nth-child(2),
@@ -37,11 +37,29 @@
     &:nth-child(7),
     &:nth-child(8),
     &:nth-child(9) {
-      border-top: 0;
+      margin-top: 0;
+      border-top-color: #333;
     }
 
     &:nth-child(9n+1) {
-      border-left: 0;
+      margin-left: 0;
+      border-left-color: #333;
+    }
+
+    &:nth-child(73),
+    &:nth-child(74),
+    &:nth-child(75),
+    &:nth-child(76),
+    &:nth-child(77),
+    &:nth-child(78),
+    &:nth-child(79),
+    &:nth-child(80),
+    &:nth-child(81) {
+      border-bottom-color: #333;
+    }
+
+    &:nth-child(9n) {
+      border-right-color: #333;
     }
 
     &:nth-child(9n+4),
