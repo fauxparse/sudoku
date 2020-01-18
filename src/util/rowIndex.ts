@@ -1,3 +1,6 @@
-export default function rowIndex(i: number): number {
-  return Math.floor(i / 9);
+import { Cell } from '../types';
+import cellIndex from './cellIndex';
+
+export default function rowIndex(i: number | Cell): number {
+  return Math.floor(cellIndex(i) / 9);
 }

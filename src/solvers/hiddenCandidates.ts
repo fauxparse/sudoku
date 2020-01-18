@@ -29,7 +29,7 @@ export default function hiddenCandidates(n: number): Mutator {
     const phases = [row, column, block];
     return phases.reduce((memo: Puzzle, fetch) => {
       const result = { current: memo };
-      for (let i = 2; i < 3; i++) {
+      for (let i = 0; i < 9; i++) {
         const group = fetch(i, result.current.cells);
         setsOf(n, group).forEach(({ numbers, cells }) => {
           console.log(`Hidden ${numbers.join()} ${setName(n)} in ${notate(cells)}`);

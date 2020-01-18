@@ -10,7 +10,10 @@ import strategies from './strategies';
 const EMPTY_STEP = { operations: [] };
 
 const apply = (step: Step, puzzle: Puzzle): Puzzle =>
-  step.operations.reduce((puzzle, op) => op.mutate(puzzle), puzzle);
+  step.operations.reduce((puzzle, op) => {
+    console.log(op.description);
+    return op.mutate(puzzle);
+  }, puzzle);
 
 const useStepper = (): [BehaviorSubject<number>, () => void] => {
   const stepper = useRef(new BehaviorSubject<number>(0));
@@ -34,18 +37,22 @@ const Sudoku: React.FC<Props> = ({ givens }) => {
       step$.pipe(
         mergeScan(
           ({ puzzle, next }: State): Observable<State> => {
-            const nextPuzzle = apply(next, puzzle);
-            return from(strategies).pipe(
-              mergeMap(op => op(nextPuzzle)),
-              first(),
-              catchError(() => of(EMPTY_STEP)),
-              map(step => ({
-                puzzle: nextPuzzle,
-                next: step,
-              })),
-            );
+            if (next) {
+              const nextPuzzle = apply(next, puzzle);
+              return from(strategies).pipe(
+                mergeMap(op => op(nextPuzzle)),
+                first(),
+                catchError(() => of(EMPTY_STEP)),
+                map(step => ({
+                  puzzle: nextPuzzle,
+                  next: step,
+                })),
+              );
+            } else {
+              return of({ puzzle, next: EMPTY_STEP });
+            }
           },
-          { puzzle: newPuzzle(givens), next: EMPTY_STEP },
+          { puzzle: newPuzzle(givens) },
         ),
       ),
     [givens, step$],
@@ -58,7 +65,9 @@ const Sudoku: React.FC<Props> = ({ givens }) => {
   useEffect(() => {
     stream$.subscribe(({ puzzle, next }) => {
       setPuzzle(puzzle);
-      setDifference(diff(puzzle, apply(next, puzzle)));
+      if (next) {
+        setDifference(diff(puzzle, apply(next, puzzle)));
+      }
     });
   }, [stream$]);
 
