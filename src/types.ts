@@ -37,5 +37,6 @@ export interface Step {
 
 export interface State {
   puzzle: Puzzle;
-  next?: Step;
+  step?: Step;
+  diff?: Diff;
 }

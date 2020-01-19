@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { BehaviorSubject, Observable, from, of } from 'rxjs';
-import { mergeScan, mergeMap, first, map, catchError } from 'rxjs/operators';
+import { mergeScan, mergeMap, first, map, catchError, scan, zip, startWith } from 'rxjs/operators';
 import './App.scss';
 import Grid from './Grid';
 import { Puzzle, Diff, Step, State } from './types';
@@ -11,7 +11,6 @@ const EMPTY_STEP = { operations: [] };
 
 const apply = (step: Step, puzzle: Puzzle): Puzzle =>
   step.operations.reduce((puzzle, op) => {
-    console.log(op.description);
     return op.mutate(puzzle);
   }, puzzle);
 
@@ -29,33 +28,53 @@ interface Props {
   givens: string;
 }
 
+function stagger<T>(n = 1) {
+  return (source: Observable<T>): Observable<T> =>
+    source.pipe(
+      scan((buffer: T[], value: T) => [value, ...buffer].slice(0, n + 1), []),
+      map((buffer: T[]) => buffer[buffer.length - 1]),
+    );
+}
+
 const Sudoku: React.FC<Props> = ({ givens }) => {
   const [step$, nextStep] = useStepper();
 
-  const stream$ = useMemo<Observable<State>>(
+  const initial = useMemo<State>(() => ({ puzzle: newPuzzle(givens) }), [givens]);
+
+  const solve$ = useMemo<Observable<State>>(
     () =>
       step$.pipe(
         mergeScan(
-          ({ puzzle, next }: State): Observable<State> => {
-            if (next) {
-              const nextPuzzle = apply(next, puzzle);
-              return from(strategies).pipe(
-                mergeMap(op => op(nextPuzzle)),
-                first(),
-                catchError(() => of(EMPTY_STEP)),
-                map(step => ({
-                  puzzle: nextPuzzle,
-                  next: step,
-                })),
-              );
-            } else {
-              return of({ puzzle, next: EMPTY_STEP });
-            }
-          },
-          { puzzle: newPuzzle(givens) },
+          ({ puzzle }) =>
+            from(strategies).pipe(
+              mergeMap(op => op(puzzle)),
+              first(),
+              catchError(() => of(EMPTY_STEP)),
+              map(step => ({
+                puzzle: apply(step, puzzle),
+                step,
+              })),
+            ),
+          initial,
         ),
+        startWith(initial),
       ),
-    [givens, step$],
+    [initial, step$],
+  );
+
+  const stream$ = useMemo<Observable<State>>(
+    () =>
+      solve$.pipe(
+        stagger(),
+        zip(solve$),
+        map(([current, next]) => ({
+          puzzle: current.puzzle,
+          step: next.step,
+          diff: next.step ? diff(current.puzzle, next.puzzle) : [],
+        })),
+        stagger(),
+      ),
+    [solve$],
   );
 
   const [puzzle, setPuzzle] = useState<Puzzle | null>(null);
@@ -63,11 +82,9 @@ const Sudoku: React.FC<Props> = ({ givens }) => {
   const [difference, setDifference] = useState<Diff>([]);
 
   useEffect(() => {
-    stream$.subscribe(({ puzzle, next }) => {
+    stream$.subscribe(({ puzzle, diff }) => {
       setPuzzle(puzzle);
-      if (next) {
-        setDifference(diff(puzzle, apply(next, puzzle)));
-      }
+      setDifference(diff || []);
     });
   }, [stream$]);
 
