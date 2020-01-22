@@ -1,7 +1,6 @@
 import { Cell } from '../types';
+import columnIndex from './columnIndex';
 
 export default function column(x: number, cells: Cell[]): Cell[] {
-  return Array(9)
-    .fill(0)
-    .map((_, y) => cells[y * 9 + x]);
+  return cells.filter(c => columnIndex(c) === x);
 }

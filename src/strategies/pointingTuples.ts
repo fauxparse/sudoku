@@ -2,7 +2,17 @@ import { Observable, from, of, EMPTY } from 'rxjs';
 import { map, flatMap, filter } from 'rxjs/operators';
 import { difference, range, uniq } from 'lodash';
 import { Puzzle, Step } from '../types';
-import { missing, locate, rowIndex, columnIndex, row, column, block } from '../util';
+import {
+  missing,
+  locate,
+  rowIndex,
+  columnIndex,
+  row,
+  column,
+  block,
+  groupName,
+  notate,
+} from '../util';
 import { eliminate } from '../operations';
 
 export default (puzzle: Puzzle): Observable<Step> =>
@@ -31,7 +41,12 @@ export default (puzzle: Puzzle): Observable<Step> =>
       }
     }),
     filter(({ others }) => others.length > 0),
-    map(({ number, others }) => ({
+    map(({ number, others, cells }) => ({
       operations: [eliminate(number, others)],
+      description: `Pointing ${groupName(cells.length)} in ${notate(cells)}`,
+      highlights: [
+        { kind: 'restrict', numbers: [number], cells },
+        { kind: 'eliminate', numbers: [number], cells: others },
+      ],
     })),
   );

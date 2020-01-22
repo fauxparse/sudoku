@@ -1,7 +1,7 @@
 import { Observable, from, of } from 'rxjs';
 import { map, filter, flatMap } from 'rxjs/operators';
-import { range } from 'lodash';
-import { row, column, block, missing, combinations } from '../util';
+import { range, difference } from 'lodash';
+import { row, column, block, missing, combinations, notate, groupName } from '../util';
 import { eliminate } from '../operations';
 import { Puzzle, Step } from '../types';
 
@@ -36,12 +36,17 @@ export default (n: number) => (puzzle: Puzzle): Observable<Step> =>
       ),
     ),
     filter(({ group, cells }) => group.length === n && cells.length > n),
-    map(({ cells, group, numbers }) => ({
-      operations: [
-        eliminate(
-          Array.from(numbers),
-          cells.filter(c => !group.includes(c)),
-        ),
+    map(step => ({
+      ...step,
+      others: difference(step.cells, step.group),
+      numbers: Array.from(step.numbers),
+    })),
+    map(({ group, numbers, others }) => ({
+      operations: [eliminate(Array.from(numbers), others)],
+      description: `Naked ${numbers.join(',')} ${groupName(n)} in ${notate(group)}`,
+      highlights: [
+        { kind: 'restrict', cells: group, numbers },
+        { kind: 'eliminate', cells: others, numbers },
       ],
     })),
   );

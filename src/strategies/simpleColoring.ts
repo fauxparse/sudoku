@@ -1,6 +1,6 @@
 import { Puzzle, Cell, Step } from '../types';
-import { Observable, from, EMPTY, of, concat } from 'rxjs';
-import { flatMap, map, filter, tap } from 'rxjs/operators';
+import { Observable, from, of, concat } from 'rxjs';
+import { flatMap, map, filter } from 'rxjs/operators';
 import { partition, intersection, isEmpty, flatten, uniq, difference, range } from 'lodash';
 import {
   isSolved,
@@ -67,6 +67,11 @@ function conflicts(cells: Cell[]): boolean {
   return Array.from(combinations(2, cells)).some(([a, b]) => sees(a, b));
 }
 
+interface Colored {
+  digit: number;
+  graph: Cell[][];
+}
+
 export default function simpleColoring(puzzle: Puzzle): Observable<Step> {
   const coloured = from(range(1, 10)).pipe(
     map(digit => ({
@@ -84,27 +89,40 @@ export default function simpleColoring(puzzle: Puzzle): Observable<Step> {
 
   return concat(
     coloured.pipe(
-      flatMap(({ digit, graph }) =>
+      flatMap<Colored, Observable<Step>>(({ digit, graph }) =>
         from(graph).pipe(
           filter(conflicts),
-          tap(cells => console.log(`remove colliding ${digit} in ${notate(cells)}`)),
-          map(cells => ({ operations: [eliminate(digit, cells)] })),
+          map(cells => ({
+            operations: [eliminate(digit, cells)],
+            description: `Simple coloring removes colliding ${digit}s in ${notate(cells)}`,
+            highlights: [
+              { kind: 'eliminate', cells, numbers: [digit] },
+              { kind: 'red', cells, numbers: [] },
+              { kind: 'black', cells: graph.find(cs => cs !== cells) || [], numbers: [] },
+            ],
+          })),
         ),
       ),
     ),
 
     coloured.pipe(
-      flatMap(({ digit, graph }) => {
+      flatMap<Colored, Observable<Step>>(({ digit, graph }) => {
         const [red, black] = graph;
         const cells = difference(locate(digit, puzzle.cells), red.concat(black)).filter(
           c => red.some(r => sees(c, r)) && black.some(b => sees(c, b)),
         );
-        if (cells.length) {
-          console.log(`remove off-chain ${digit} in ${notate(cells)}`);
-          return of({ operations: [eliminate(digit, cells)] });
-        } else {
-          return EMPTY;
-        }
+        return of(cells).pipe(
+          filter(cells => cells.length > 0),
+          map(cells => ({
+            operations: [eliminate(digit, cells)],
+            description: `Simple coloring removes off-chain ${digit} in ${notate(cells)}`,
+            highlights: [
+              { kind: 'eliminate', cells, numbers: [digit] },
+              { kind: 'red', cells: red, numbers: [] },
+              { kind: 'black', cells: black, numbers: [] },
+            ],
+          })),
+        );
       }),
     ),
   );

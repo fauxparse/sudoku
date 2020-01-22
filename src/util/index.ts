@@ -8,6 +8,7 @@ export { default as columnIndexToCellIndex } from './columnIndexToCellIndex';
 export { default as combinations } from './combinations';
 export { default as diff } from './diff';
 export { default as eliminate } from './eliminate';
+export { default as groupName } from './groupName';
 export { default as indexInBlock } from './indexInBlock';
 export { default as influence } from './influence';
 export { default as isSolved } from './isSolved';

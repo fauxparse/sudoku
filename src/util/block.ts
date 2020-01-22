@@ -1,8 +1,6 @@
 import { Cell } from '../types';
-import blockIndexToCellIndex from './blockIndexToCellIndex';
+import blockIndex from './blockIndex';
 
 export default function block(n: number, cells: Cell[]): Cell[] {
-  return Array(9)
-    .fill(0)
-    .map((_, i) => cells[blockIndexToCellIndex(n, i)]);
+  return cells.filter(c => blockIndex(c) === n);
 }

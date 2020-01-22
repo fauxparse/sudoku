@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   min-height: 100vh;
   padding: 2rem;
 }
@@ -83,14 +83,11 @@
       display: grid;
       grid-template-columns: repeat(3, 1em);
       grid-template-rows: repeat(3, 1em);
-    }
 
-    &--corner,
-    &--center {
       .number {
         width: 1.2em;
         height: 1.2em;
-        border-radius: 0.6em;
+        border-radius: 2px;
         text-align: center;
         font-size: 0.8em;
         line-height: 1.2em;
@@ -108,17 +105,40 @@
       color: blue;
     }
 
+    &--wing {
+      background: yellow;
+    }
+
+    &--pivot {
+      background: orange;
+    }
+
+    &--red {
+      background: pink;
+    }
+
+    &--black {
+      background: cornflowerblue;
+    }
+
     @for $i from 1 through 9 {
-      &[data-highlighted*="#{$i}"] {
+      &[data-force*="#{$i}"] {
         [data-number="#{$i}"] {
-          background: green;
+          background-color: green;
           color: white;
         }
       }
 
-      &[data-removed*="#{$i}"] {
+      &[data-eliminate*="#{$i}"] {
         [data-number="#{$i}"] {
           color: red;
+        }
+      }
+
+      &[data-restrict*="#{$i}"] {
+        [data-number="#{$i}"] {
+          color: green;
+          background-color: yellow;
         }
       }
     }

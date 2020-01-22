@@ -1,30 +1,35 @@
 import React from 'react';
 import classNames from 'classnames';
-import { Cell as CellType, CellDiff } from './types';
+import { Cell as CellType, Highlight } from './types';
 import { isSolved } from './util';
 
 const NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 interface Props {
   cell: CellType;
-  diff?: CellDiff;
+  highlights?: Highlight[];
 }
 
-function subtract<T>(a: T[] | Set<T>, b: T[] | Set<T>): Set<T> {
-  const set = new Set(b);
-  return new Set(Array.from(a).filter(el => !set.has(el)));
-}
-
-const Cell: React.FC<Props> = ({ cell, diff }) => {
-  const removed = diff ? Array.from(subtract(diff.previous, diff.numbers)) : [];
-  const highlighted =
-    diff && diff.state === 'placed' && diff.numbers.length === 1 ? diff.numbers : [];
+const Cell: React.FC<Props> = ({ cell, highlights = [] }) => {
+  const highlighters = highlights.reduce(
+    (result, h) =>
+      h.numbers.length
+        ? {
+            ...result,
+            [`data-${h.kind}`]: h.numbers.join(' '),
+          }
+        : result,
+    {},
+  );
 
   return (
     <div
-      className={classNames('cell', `cell--${cell.state}`)}
-      data-highlighted={highlighted.join(' ')}
-      data-removed={removed.join(' ')}
+      className={classNames(
+        'cell',
+        `cell--${cell.state}`,
+        highlights.filter(h => !h.numbers.length).map(h => `cell--${h.kind}`),
+      )}
+      {...highlighters}
     >
       {isSolved(cell) && (
         <span className="number" data-number={cell.numbers[0]}>
@@ -33,14 +38,15 @@ const Cell: React.FC<Props> = ({ cell, diff }) => {
       )}
       {cell.state === 'corner' &&
         NUMBERS.map(i => (
-          <span key={i} className="number" data-number={i}>
+          <span
+            key={i}
+            className={classNames(
+              'number',
+              highlights.filter(h => h.numbers.includes(i)).map(h => `number--${h.kind}`),
+            )}
+            data-number={i}
+          >
             {cell.numbers.includes(i) ? i : ''}
-          </span>
-        ))}
-      {cell.state === 'center' &&
-        cell.numbers.map(i => (
-          <span key={i} className="number" data-number={i}>
-            {i}
           </span>
         ))}
     </div>

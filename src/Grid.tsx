@@ -1,17 +1,21 @@
 import React from 'react';
-import { Puzzle, Diff } from './types';
+import { Puzzle, Highlight } from './types';
 import Cell from './Cell';
 
 interface Props {
   puzzle: Puzzle;
-  diff: Diff;
+  highlights: Highlight[];
 }
 
-const Grid: React.FC<Props> = ({ puzzle, diff }) => {
+const Grid: React.FC<Props> = ({ puzzle, highlights = [] }) => {
   return (
     <div className="grid">
       {puzzle.cells.map((cell, i) => (
-        <Cell cell={cell} key={i} diff={diff.find(d => d.index === i)} />
+        <Cell
+          cell={cell}
+          key={i}
+          highlights={highlights.filter(({ cells }) => cells.includes(cell))}
+        />
       ))}
     </div>
   );

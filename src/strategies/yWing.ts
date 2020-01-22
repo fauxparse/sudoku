@@ -1,7 +1,7 @@
 import { Observable, from } from 'rxjs';
 import { filter, flatMap, map } from 'rxjs/operators';
 import { Puzzle, Cell, Step } from '../types';
-import { isSolved, combinations, influence, sees } from '../util';
+import { isSolved, combinations, influence, sees, notate } from '../util';
 import { eliminate } from '../operations';
 
 interface YWing {
@@ -52,8 +52,16 @@ export default function yWing(puzzle: Puzzle): Observable<Step> {
       others: influence(y.wings, puzzle.cells).filter(c => c.numbers.includes(y.number)),
     })),
     filter(({ others }) => others.length > 0),
-    map(({ others, number }) => ({
+    map(({ pivot, wings, others, number }) => ({
       operations: [eliminate(number, others)],
+      description: `Y-Wing: pivot ${notate(pivot)}, wings ${notate(
+        wings,
+      )} removes ${number} from ${notate(others)}`,
+      highlights: [
+        { kind: 'pivot', cells: [pivot], numbers: [] },
+        { kind: 'wing', cells: wings, numbers: [] },
+        { kind: 'eliminate', cells: others, numbers: [number] },
+      ],
     })),
   );
 }

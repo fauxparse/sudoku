@@ -2,7 +2,7 @@ import { Observable, from } from 'rxjs';
 import { flatMap, map, filter } from 'rxjs/operators';
 import { range, uniq, flatten, difference } from 'lodash';
 import { Puzzle, Cell, Step } from '../types';
-import { row, rowIndex, column, columnIndex, locate, combinations } from '../util';
+import { row, rowIndex, column, columnIndex, locate, combinations, notate } from '../util';
 import { eliminate } from '../operations';
 
 interface Matcher {
@@ -54,8 +54,13 @@ export default function xWing(puzzle: Puzzle): Observable<Step> {
     })),
     filter(({ positions, others }) => positions.length === 2 && others.length > 0),
     map(
-      ({ digit, others }): Step => ({
+      ({ digit, cells, others }): Step => ({
         operations: [eliminate(digit, others)],
+        description: `X-Wing on ${digit} in ${notate(cells)}`,
+        highlights: [
+          { kind: 'wing', cells, numbers: [] },
+          { kind: 'eliminate', cells: others, numbers: [digit] },
+        ],
       }),
     ),
   );

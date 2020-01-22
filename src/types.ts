@@ -1,4 +1,4 @@
-export type CellState = 'empty' | 'given' | 'placed' | 'corner' | 'center';
+export type CellState = 'empty' | 'given' | 'placed' | 'corner';
 
 export interface Cell {
   index: number;
@@ -31,8 +31,18 @@ export interface CellDiff {
 
 export type Diff = CellDiff[];
 
+export type HighlightKind = 'force' | 'eliminate' | 'restrict' | 'wing' | 'pivot' | 'red' | 'black';
+
+export interface Highlight {
+  kind: HighlightKind;
+  cells: Cell[];
+  numbers: number[];
+}
+
 export interface Step {
   operations: Operation[];
+  description?: string;
+  highlights?: Highlight[];
 }
 
 export interface State {

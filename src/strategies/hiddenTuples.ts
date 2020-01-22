@@ -2,7 +2,7 @@ import { Observable, of, from } from 'rxjs';
 import { flatMap, map, filter } from 'rxjs/operators';
 import { range, difference } from 'lodash';
 import { Puzzle, Step } from '../types';
-import { row, column, block, combinations, missing, locate } from '../util';
+import { row, column, block, combinations, missing, locate, groupName, notate } from '../util';
 import { restrict } from '../operations';
 
 export default (n: number) => (puzzle: Puzzle): Observable<Step> =>
@@ -19,5 +19,10 @@ export default (n: number) => (puzzle: Puzzle): Observable<Step> =>
     ),
     map(({ cells, numbers }) => ({
       operations: [restrict(numbers, cells)],
+      description: `Hidden ${numbers.join(',')} ${groupName(n)} in ${notate(cells)}`,
+      highlights: [
+        { kind: 'restrict', cells, numbers },
+        { kind: 'eliminate', cells, numbers: difference(range(1, 10), numbers) },
+      ],
     })),
   );
