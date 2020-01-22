@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { BehaviorSubject, Observable, from, of } from 'rxjs';
-import { mergeScan, mergeMap, first, map, catchError, scan, zip, startWith } from 'rxjs/operators';
+import { mergeScan, mergeMap, first, map, catchError, scan, startWith } from 'rxjs/operators';
 import './App.scss';
 import Grid from './Grid';
 import { Puzzle, Diff, Step, State } from './types';
@@ -10,9 +10,7 @@ import strategies from './strategies';
 const EMPTY_STEP = { operations: [] };
 
 const apply = (step: Step, puzzle: Puzzle): Puzzle =>
-  step.operations.reduce((puzzle, op) => {
-    return op.mutate(puzzle);
-  }, puzzle);
+  step.operations.reduce((puzzle, { mutate }) => mutate(puzzle), puzzle);
 
 const useStepper = (): [BehaviorSubject<number>, () => void] => {
   const stepper = useRef(new BehaviorSubject<number>(0));
@@ -36,6 +34,14 @@ function stagger<T>(n = 1) {
     );
 }
 
+function staggerZip<T>(n = 1) {
+  return (source: Observable<T>): Observable<T[]> =>
+    source.pipe(
+      scan((buffer: T[], value: T) => [value, ...buffer].slice(0, n + 1), []),
+      map((buffer: T[]) => [buffer[buffer.length - 1], buffer[0]]),
+    );
+}
+
 const Sudoku: React.FC<Props> = ({ givens }) => {
   const [step$, nextStep] = useStepper();
 
@@ -47,7 +53,7 @@ const Sudoku: React.FC<Props> = ({ givens }) => {
         mergeScan(
           ({ puzzle }) =>
             from(strategies).pipe(
-              mergeMap(op => op(puzzle)),
+              mergeMap(strategy => strategy(puzzle)),
               first(),
               catchError(() => of(EMPTY_STEP)),
               map(step => ({
@@ -65,8 +71,7 @@ const Sudoku: React.FC<Props> = ({ givens }) => {
   const stream$ = useMemo<Observable<State>>(
     () =>
       solve$.pipe(
-        stagger(),
-        zip(solve$),
+        staggerZip(),
         map(([current, next]) => ({
           puzzle: current.puzzle,
           step: next.step,

@@ -5,6 +5,8 @@ import hiddenTuples from './hiddenTuples';
 import pointingTuples from './pointingTuples';
 import boxLine from './boxLine';
 import xWing from './xWing';
+import simpleColoring from './simpleColoring';
+import yWing from './yWing';
 
 export default [
   nakedSingles,
@@ -19,4 +21,6 @@ export default [
   pointingTuples,
   boxLine,
   xWing,
+  simpleColoring,
+  yWing,
 ];

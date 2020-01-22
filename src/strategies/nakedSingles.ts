@@ -4,8 +4,9 @@ import { isSolved } from '../util';
 import { place } from '../operations';
 import { Puzzle, Step } from '../types';
 
-export default (puzzle: Puzzle): Observable<Step> =>
-  from(puzzle.cells).pipe(
+export default (puzzle: Puzzle): Observable<Step> => {
+  return from(puzzle.cells).pipe(
     filter(cell => !isSolved(cell) && cell.numbers.length === 1),
     map(cell => ({ operations: [place(cell.numbers[0], cell)] })),
   );
+};

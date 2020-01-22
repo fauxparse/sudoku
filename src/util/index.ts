@@ -9,6 +9,7 @@ export { default as combinations } from './combinations';
 export { default as diff } from './diff';
 export { default as eliminate } from './eliminate';
 export { default as indexInBlock } from './indexInBlock';
+export { default as influence } from './influence';
 export { default as isSolved } from './isSolved';
 export { default as locate } from './locate';
 export { default as missing } from './missing';
