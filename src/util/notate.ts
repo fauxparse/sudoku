@@ -4,19 +4,21 @@ import cellIndex from './cellIndex';
 import rowIndex from './rowIndex';
 import columnIndex from './columnIndex';
 
-function allSame<T>(items: T[]): boolean {
-  return uniq(items).length === 1;
+function product<T, R>(first: T[], second: R[]): [T, R][] {
+  return first.reduce((r, a) => r.concat(second.map(b => [a, b])), [] as [T, R][]);
 }
 
 export default function notate(cell: Cell | number | (Cell | number)[]): string {
   if (isArray(cell)) {
-    const rows = cell.map((c: Cell | number) => rowIndex(cellIndex(c)) + 1);
-    const columns = cell.map((c: Cell | number) => columnIndex(cellIndex(c)) + 1);
+    const rows = uniq(cell.map(rowIndex).sort());
+    const columns = uniq(cell.map(columnIndex).sort());
+    const grid = product(columns, rows).reduce((set, coords) => set.add(coords.join()), new Set());
 
-    if (allSame(rows)) {
-      return `r${rows[0]}c${columns.join('')}`;
-    } else if (allSame(columns)) {
-      return `r${rows.join('')}c${columns[0]}`;
+    if (
+      (rows.length < cell.length || columns.length < cell.length) &&
+      cell.every(c => grid.has(`${columnIndex(c)},${rowIndex(c)}`))
+    ) {
+      return `r${rows.map(r => r + 1).join('')}c${columns.map(c => c + 1).join('')}`;
     } else {
       return cell.map(notate).join('/');
     }

@@ -5,12 +5,12 @@ import { notate } from '../util';
 import { eliminate } from '../operations';
 import mesh from './mesh';
 
-export default function xWing(puzzle: Puzzle): Observable<Step> {
-  return mesh(2, puzzle).pipe(
+export default function swordfish(puzzle: Puzzle): Observable<Step> {
+  return mesh(3, puzzle).pipe(
     map(
       ({ digit, cells, others }): Step => ({
         operations: [eliminate(digit, others)],
-        description: `X-Wing on ${digit} in ${notate(cells)}`,
+        description: `Swordfish in ${notate(cells)} removes ${digit}s in ${notate(others)}`,
         highlights: [
           { kind: 'wing', cells, numbers: [] },
           { kind: 'eliminate', cells: others, numbers: [digit] },

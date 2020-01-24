@@ -7,6 +7,9 @@ import boxLine from './boxLine';
 import xWing from './xWing';
 import simpleColoring from './simpleColoring';
 import yWing from './yWing';
+import swordfish from './swordfish';
+import xyzWing from './xyzWing';
+import bug from './bug';
 
 export default [
   nakedSingles,
@@ -23,4 +26,7 @@ export default [
   xWing,
   simpleColoring,
   yWing,
+  swordfish,
+  xyzWing,
+  bug,
 ];
