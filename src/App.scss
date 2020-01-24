@@ -18,9 +18,9 @@
   font-size: 1rem;
 
   .cell {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    display: grid;
+    grid-template-columns: repeat(3, 1em);
+    grid-template-rows: repeat(3, 1em);
     box-sizing: content-box;
     width: 3em;
     height: 3em;
@@ -79,30 +79,47 @@
       border-top-color: #666;
     }
 
-    &--corner {
-      display: grid;
-      grid-template-columns: repeat(3, 1em);
-      grid-template-rows: repeat(3, 1em);
+    .number {
+      width: 1.2em;
+      height: 1.2em;
+      border-radius: 2px;
+      text-align: center;
+      font-size: 0.8em;
+      line-height: 1.2em;
+      color: #666;
 
-      .number {
-        width: 1.2em;
-        height: 1.2em;
-        border-radius: 2px;
-        text-align: center;
-        font-size: 0.8em;
-        line-height: 1.2em;
+      @for $i from 0 to 9 {
+        &[data-number="#{$i + 1}"] {
+          grid-column: #{($i % 3) + 1} / span 1;
+          grid-row: #{floor($i / 3) + 1} / span 1;
+        }
       }
     }
 
     &--given,
     &--placed {
       .number {
-        font-size: 2em;
+        &[data-number] {
+          width: 1.5em;
+          height: 1.5em;
+          font-size: 2em;
+          line-height: 1.5em;
+          grid-column: 1 / span 3;
+          grid-row: 1 / span 3;
+        }
+      }
+    }
+
+    &--given {
+      .number {
+        color: black;
       }
     }
 
     &--placed {
-      color: blue;
+      .number {
+        color: blue;
+      }
     }
 
     &--wing {

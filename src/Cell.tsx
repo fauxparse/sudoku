@@ -1,9 +1,6 @@
 import React from 'react';
 import classNames from 'classnames';
 import { Cell as CellType, Highlight } from './types';
-import { isSolved } from './util';
-
-const NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 interface Props {
   cell: CellType;
@@ -31,24 +28,18 @@ const Cell: React.FC<Props> = ({ cell, highlights = [] }) => {
       )}
       {...highlighters}
     >
-      {isSolved(cell) && (
-        <span className="number" data-number={cell.numbers[0]}>
-          {cell.numbers[0]}
+      {cell.numbers.map(n => (
+        <span
+          key={n}
+          className={classNames(
+            'number',
+            highlights.filter(h => h.numbers.includes(n)).map(h => `number--${h.kind}`),
+          )}
+          data-number={n}
+        >
+          {n}
         </span>
-      )}
-      {cell.state === 'corner' &&
-        NUMBERS.map(i => (
-          <span
-            key={i}
-            className={classNames(
-              'number',
-              highlights.filter(h => h.numbers.includes(i)).map(h => `number--${h.kind}`),
-            )}
-            data-number={i}
-          >
-            {cell.numbers.includes(i) ? i : ''}
-          </span>
-        ))}
+      ))}
     </div>
   );
 };
