@@ -6,6 +6,14 @@ export interface Cell {
   numbers: number[];
 }
 
+export type Candidate = [Cell, number];
+
+export interface Link {
+  from: Candidate;
+  to: Candidate;
+  strong?: boolean;
+}
+
 export interface Puzzle {
   cells: Cell[];
 }
@@ -43,6 +51,7 @@ export interface Step {
   operations: Operation[];
   description?: string;
   highlights?: Highlight[];
+  links?: Link[];
 }
 
 export interface State {

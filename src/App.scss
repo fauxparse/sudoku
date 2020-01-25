@@ -9,11 +9,12 @@
 
 .grid {
   display: grid;
+  position: relative;
   grid-template-columns: repeat(9, max-content);
   grid-template-rows: repeat(9, max-content);
   box-sizing: content-box;
-  width: calc(27em + 8px);
-  height: calc(27em + 8px);
+  width: calc(27em + 10px);
+  height: calc(27em + 10px);
   font-family: monospace;
   font-size: 1rem;
 
@@ -86,7 +87,7 @@
       text-align: center;
       font-size: 0.8em;
       line-height: 1.2em;
-      color: #666;
+      color: #333;
 
       @for $i from 0 to 9 {
         &[data-number="#{$i + 1}"] {
@@ -158,6 +159,32 @@
           background-color: yellow;
         }
       }
+    }
+  }
+
+  &__overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    opacity: 0.5;
+    pointer-events: none;
+    touch-action: none;
+    mix-blend-mode: multiply;
+  }
+
+  &__endpoint {
+    fill: red;
+  }
+
+  &__link {
+    stroke: red;
+    stroke-width: 2px;
+    fill: none;
+
+    &--weak {
+      stroke-dasharray: 6px;
     }
   }
 }

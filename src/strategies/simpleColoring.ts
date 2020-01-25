@@ -1,4 +1,4 @@
-import { Puzzle, Cell, Step } from '../types';
+import { Puzzle, Cell, Step, Link } from '../types';
 import { Observable, from, of, concat } from 'rxjs';
 import { flatMap, map, filter } from 'rxjs/operators';
 import { partition, intersection, isEmpty, flatten, uniq, difference, range } from 'lodash';
@@ -70,6 +70,7 @@ function conflicts(cells: Cell[]): boolean {
 interface Colored {
   digit: number;
   graph: Cell[][];
+  edges: Cell[][];
 }
 
 export default function simpleColoring(puzzle: Puzzle): Observable<Step> {
@@ -81,15 +82,15 @@ export default function simpleColoring(puzzle: Puzzle): Observable<Step> {
     filter(({ cells }) => cells.length > 0),
     map(({ digit, cells }) => ({ digit, edges: findEdges(digit, cells) })),
     flatMap(({ digit, edges }) =>
-      from(partitionGraph(edges)).pipe(map(graph => ({ digit, graph }))),
+      from(partitionGraph(edges)).pipe(map(graph => ({ digit, graph, edges }))),
     ),
     filter(({ graph }) => graph.length > 2),
-    map(({ digit, graph }) => ({ digit, graph: colorGraph(graph) })),
+    map(({ digit, graph, edges }) => ({ digit, graph: colorGraph(graph), edges })),
   );
 
   return concat(
     coloured.pipe(
-      flatMap<Colored, Observable<Step>>(({ digit, graph }) =>
+      flatMap<Colored, Observable<Step>>(({ digit, graph, edges }) =>
         from(graph).pipe(
           filter(conflicts),
           map(cells => ({
@@ -100,13 +101,16 @@ export default function simpleColoring(puzzle: Puzzle): Observable<Step> {
               { kind: 'red', cells, numbers: [] },
               { kind: 'black', cells: graph.find(cs => cs !== cells) || [], numbers: [] },
             ],
+            links: edges.map(
+              ([a, b]: Cell[]): Link => ({ from: [a, digit], to: [b, digit], strong: true }),
+            ),
           })),
         ),
       ),
     ),
 
     coloured.pipe(
-      flatMap<Colored, Observable<Step>>(({ digit, graph }) => {
+      flatMap<Colored, Observable<Step>>(({ digit, graph, edges }) => {
         const [red, black] = graph;
         const cells = difference(locate(digit, puzzle.cells), red.concat(black)).filter(
           c => red.some(r => sees(c, r)) && black.some(b => sees(c, b)),
@@ -121,6 +125,9 @@ export default function simpleColoring(puzzle: Puzzle): Observable<Step> {
               { kind: 'red', cells: red, numbers: [] },
               { kind: 'black', cells: black, numbers: [] },
             ],
+            links: edges.map(
+              ([a, b]: Cell[]): Link => ({ from: [a, digit], to: [b, digit], strong: true }),
+            ),
           })),
         );
       }),

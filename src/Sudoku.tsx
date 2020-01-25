@@ -3,7 +3,7 @@ import { BehaviorSubject, Observable, from, of } from 'rxjs';
 import { mergeScan, mergeMap, first, map, catchError, scan, startWith } from 'rxjs/operators';
 import './App.scss';
 import Grid from './Grid';
-import { Puzzle, Step, State, Highlight } from './types';
+import { Puzzle, Step, State, Highlight, Link } from './types';
 import { newPuzzle, diff } from './util';
 import strategies from './strategies';
 
@@ -88,17 +88,20 @@ const Sudoku: React.FC<Props> = ({ givens }) => {
 
   const [highlights, setHighlights] = useState<Highlight[]>([]);
 
+  const [links, setLinks] = useState<Link[]>([]);
+
   useEffect(() => {
     stream$.subscribe(({ puzzle, step }) => {
       setPuzzle(puzzle);
       setHighlights((step && step.highlights) || []);
+      setLinks((step && step.links) || []);
       setDescription((step && step.description) || '');
     });
   }, [stream$]);
 
   return (
     <div className="sudoku">
-      {puzzle && <Grid puzzle={puzzle} highlights={highlights} />}
+      {puzzle && <Grid puzzle={puzzle} highlights={highlights} links={links} />}
 
       <button onClick={nextStep}>Step</button>
       <p>{description}</p>
