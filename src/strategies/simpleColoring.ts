@@ -1,7 +1,7 @@
 import { Puzzle, Cell, Step, Link } from '../types';
 import { Observable, from, of, concat } from 'rxjs';
 import { flatMap, map, filter } from 'rxjs/operators';
-import { partition, intersection, isEmpty, flatten, uniq, difference, range } from 'lodash';
+import { isEmpty, flatten, uniq, difference, range } from 'lodash';
 import {
   isSolved,
   combinations,
@@ -13,10 +13,12 @@ import {
   notate,
 } from '../util';
 import { eliminate } from '../operations';
+import { stronglyConnectedComponents } from '../graph';
 
-function findEdges(digit: number, cells: Cell[]): Cell[][] {
+function findEdges(digit: number, cells: Cell[]): [Cell, Cell][] {
   const edges = combinations(2, cells)
     .map(cs => Array.from(cs))
+    .map(([a, b]: Cell[]): [Cell, Cell] => [a, b])
     .filter(
       ([a, b]) =>
         (rowIndex(a) === rowIndex(b) &&
@@ -29,20 +31,7 @@ function findEdges(digit: number, cells: Cell[]): Cell[][] {
   return edges;
 }
 
-function partitionGraph<T>(edges: T[][]): T[][][] {
-  return edges.reduce((graphs: T[][][], edge: T[]): T[][][] => {
-    const [matching, others] = partition(graphs, graph =>
-      graph.some(e => !isEmpty(intersection(e, edge))),
-    );
-    if (isEmpty(matching)) {
-      return [...others, [edge]];
-    } else {
-      return [...others, [...flatten(matching), edge]];
-    }
-  }, []);
-}
-
-function colorGraph<T>(edges: T[][]): T[][] {
+function colorGraph<T>(edges: [T, T][]): T[][] {
   if (isEmpty(edges)) return [];
 
   const nodes: T[] = uniq(flatten(edges));
@@ -82,7 +71,7 @@ export default function simpleColoring(puzzle: Puzzle): Observable<Step> {
     filter(({ cells }) => cells.length > 0),
     map(({ digit, cells }) => ({ digit, edges: findEdges(digit, cells) })),
     flatMap(({ digit, edges }) =>
-      from(partitionGraph(edges)).pipe(map(graph => ({ digit, graph, edges }))),
+      from(stronglyConnectedComponents(edges)).pipe(map(graph => ({ digit, graph, edges }))),
     ),
     filter(({ graph }) => graph.length > 2),
     map(({ digit, graph, edges }) => ({ digit, graph: colorGraph(graph), edges })),

@@ -16,6 +16,7 @@ export { default as locate } from './locate';
 export { default as missing } from './missing';
 export { default as newPuzzle } from './newPuzzle';
 export { default as notate } from './notate';
+export { default as notateCycle } from './notate';
 export { default as place } from './place';
 export { default as remove } from './remove';
 export { default as row } from './row';

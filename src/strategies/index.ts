@@ -10,6 +10,7 @@ import yWing from './yWing';
 import swordfish from './swordfish';
 import xyzWing from './xyzWing';
 import bug from './bug';
+import xCycles from './xCycles';
 
 export default [
   nakedSingles,
@@ -29,4 +30,5 @@ export default [
   swordfish,
   xyzWing,
   bug,
+  xCycles,
 ];

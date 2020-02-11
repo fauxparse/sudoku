@@ -3,7 +3,7 @@ import classNames from 'classnames';
 import { flatten, uniqBy } from 'lodash';
 import { Puzzle, Cell, Highlight, Link } from './types';
 import GridCell from './Cell';
-import { cellIndex, isSolved } from './util';
+import { cellIndex } from './util';
 
 interface Props {
   puzzle: Puzzle;
